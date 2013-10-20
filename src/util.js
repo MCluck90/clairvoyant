@@ -1,6 +1,12 @@
 'use strict';
 
 var Util = {
+    /**
+     * Formats a value into a way which makes sense in code
+     * @param {ValueNode} node
+     * @param {number} [depth=0]
+     * @returns {string}
+     */
     formatValue: function(node, depth) {
         depth = depth || 0;
         // Need these for formatting objects
@@ -42,13 +48,24 @@ var Util = {
                     str = '[\n';
                     for (var i = 0, len = elements.length; i < len; i++) {
                         var separator = (i < len - 1) ? ',\n' : '\n';
-                        str += tabs + Util.formatValue(elements[i]) + separator;
+                        str += tabs + Util.formatValue(elements[i], depth + 1) + separator;
                     }
                     str += shortTab + ']';
                 }
                 return str;
+
+            default:
+                throw new SyntaxError('Unknown value type: \'' + node.type + '\'');
+                break;
         }
     },
+
+    /**
+     * Generates code for basic initialization using an options object
+     * and setting matching member attributes
+     * @param {ValueNode[]} properties
+     * @returns {string}
+     */
     generateInitializerCode: function(properties) {
         var wrapperCode = '\toptions = Helper.defaults(options, {\n',
             defaultsCode = [],
@@ -62,6 +79,12 @@ var Util = {
 
         return wrapperCode + defaultsCode.join('\n') + '\n\t});\n\n' + propertyCode.join('\n');
     },
+
+    /**
+     * Generates statements for requiring any modules
+     * @param {RequiredModule[]} requiredModules
+     * @returns {string}
+     */
     generateRequireStatements: function(requiredModules) {
         var code = 'var ';
         for (var i = 0, len = requiredModules.length; i < len; i++) {
@@ -82,12 +105,46 @@ var Util = {
 
         return code;
     },
+
+    /**
+     * Generates a statement to have one class inherit from another
+     * @param {string} derived
+     * @param {string} base
+     * @returns {string}
+     */
     generateInheritanceCode: function(derived, base) {
         return 'Helper.inherit(' + derived + ', ' + base + ');';
     },
+
+    /**
+     * Generates a module.exports statement
+     * @param {string} exportMe
+     * @returns {string}
+     */
     generateExportsCode: function(exportMe) {
         return 'module.exports = ' + exportMe + ';';
     }
 };
 
 module.exports = Util;
+
+
+
+/**
+ * @name ValueNode
+ * @type {{
+ *  type: string,
+ *  value: string|ValueNode,
+ *  properties: ValueNode[],
+ *  elements: ValueNode[]
+ * }}
+ */
+
+/**
+ * @name RequiredModule
+ * @type {{
+ *  name: string,
+ *  baseModule: string,
+ *  moduleAttribute: string
+ * }}
+ */
