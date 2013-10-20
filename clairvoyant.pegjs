@@ -135,6 +135,7 @@ Literal
     }
     / RegularExpressionLiteral
     / ObjectLiteral
+    / ArrayLiteral
 
 NullLiteral
     = NullToken { return { type: "NullLiteral" }; }
@@ -435,9 +436,35 @@ PropertyName
  *================*/
 MainBlock
     = Identifier __ "{" __ blocks:(SubBlockList __)? "}" {
+        blocks = blocks[0] || [];
+        var components = [],
+            templates = [],
+            systems = [];
+
+        for (var i = 0, len = blocks.length; i < len; i++) {
+            switch (blocks[i].type) {
+                case "ComponentBlock":
+                    components = components.concat(blocks[i].components);
+                    break;
+
+                case "TemplateBlock":
+                    templates = templates.concat(blocks[i].templates);
+                    break;
+
+                case "SystemBlock":
+                    systems = systems.concat(blocks[i].systems);
+                    break;
+
+                default:
+                    throw new SyntaxError("Invalid block type: '" + blocks[i].type + "'");
+            }
+        }
+
         return {
             type: "MainBlock",
-            blocks: blocks !== "" ? blocks[0]: []
+            components: components,
+            templates: templates,
+            systems: systems
         };
     }
 
