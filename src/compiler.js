@@ -40,12 +40,8 @@ function compile(ast, usingPsykick3D) {
     gameName = ast.name;
     componentCode = generateComponents(ast.components);
     templateCode = generateTemplates(ast.templates);
-    //systemCode = generateSystems(ast.systems);
+    systemCode = generateSystems(ast.systems);
     //console.log(JSON.stringify(ast, null, 4));
-
-    templateCode.forEach(function(tmpl) {
-        console.log(tmpl.code + ',');
-    });
 }
 
 function generateComponents(components) {
@@ -138,7 +134,104 @@ function generateTemplates(templates) {
 }
 
 function generateSystems(systems) {
+    var code = [];
 
+    for (var i = 0, len = systems.length; i < len; i++) {
+        var system = systems[i],
+            requiredModuleCode = [],
+            systemCode = ['var ' + system.name + ' = function() {'],
+            requiredComponents = [],
+            inheritanceCode = [];
+
+        if (psykickVersion === 'psykick3d') {
+            requiredModuleCode.push(util.generateRequireStatements([
+                {
+                    name: 'System',
+                    baseModule: 'psykick3d',
+                    moduleAttribute: 'System'
+                }
+            ]));
+            inheritanceCode.push(util.generateInheritanceCode(system.name, 'System'));
+
+            if (system.parent !== null) {
+                console.warn('Ignoring system inheritance on \'' + system.name + '\'');
+            }
+        } else if (system.parent !== null) {
+            switch (system.parent) {
+                case 'RenderSystem':
+                    requiredModuleCode.push(util.generateRequireStatements([
+                        {
+                            name: 'RenderSystem',
+                            baseModule: 'psykick',
+                            moduleAttribute: 'RenderSystem'
+                        }
+                    ]));
+                    inheritanceCode.push(util.generateInheritanceCode(system.name, 'RenderSystem'));
+                    break;
+
+                case 'BehaviorSystem':
+                    requiredModuleCode.push(util.generateRequireStatements([
+                        {
+                            name: 'BehaviorSystem',
+                            baseModule: 'psykick',
+                            moduleAttribute: 'BehaviorSystem'
+                        }
+                    ]));
+                    inheritanceCode.push(util.generateInheritanceCode(system.name, 'BehaviorSystem'));
+                    break;
+
+                default:
+                    throw new SyntaxError('Expected \'RenderSystem\' or \'BehaviorSystem\' but got \'' +
+                            system.parent + '\'');
+            }
+        } else {
+            throw new SyntaxError('System \'' + system.name + '\' not specified as RenderSystem or BehaviorSystem');
+        }
+
+        // Only adds on \n when we join it all at the end
+        requiredModuleCode.push('');
+        inheritanceCode.push('');
+
+        if (system.properties.type === 'ComponentList') {
+            requiredComponents = system.properties.components;
+        } else {
+            var templates = system.properties.entities;
+            for (var j = 0, numOfTmpls = templates.length; j < numOfTmpls; j++) {
+                var templateName = templates[j];
+                for (var componentName in templatesByName[templateName]) {
+                    if (requiredComponents.indexOf(componentName) === -1) {
+                        requiredComponents.push(componentName);
+                    }
+                }
+            }
+        }
+
+
+        if (requiredComponents.length === 0) {
+            throw new SyntaxError('System \'' + system.name +'\' does not have required components or entities');
+        }
+
+        systemCode.push('\tthis.requiredComponents =[');
+        for (var j = 0, numOfComponents = requiredComponents.length; j < numOfComponents; j++) {
+            var separator = (j < numOfComponents - 1) ? '\',' : '\'';
+            systemCode.push('\t\t\'' + requiredComponents[j] + separator);
+        }
+        systemCode.push('\t];');
+        systemCode.push('};\n');
+
+        var exportCode = [util.generateExportsCode(system.name)];
+
+        code.push({
+            name: system.name,
+            code: requiredModuleCode.concat(systemCode).concat(inheritanceCode).concat(exportCode).join('\n')
+        });
+    }
+
+    code.forEach(function(val) {
+        console.log(val.code);
+    });
+
+    return code;
 }
 
 module.exports = {
