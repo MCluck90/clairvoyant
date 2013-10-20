@@ -2,6 +2,11 @@
 
 var util = require('./util.js'),
     extend = require('xtend'),
+    fs = require('fs'),
+    path = require('path'),
+    relativeTo = function(p) {
+        return path.resolve(process.cwd(), p);
+    },
     componentCode = [],
     componentsByName = {},
     templateCode = [],
@@ -10,13 +15,8 @@ var util = require('./util.js'),
     gameName = '',
     psykickVersion = 'psykick';
 
-/**
- * Generates a filename based on the class name given
- * @param {string} className
- * @returns {string}
- */
-function generateFileName(className) {
-    return className
+function generateFolderName(f) {
+    return f
         .replace(/component/gi, '')
         .replace(/system/gi, '')
         .replace(/^[A-Z]/, function(c) {
@@ -24,7 +24,16 @@ function generateFileName(className) {
         })
         .replace(/[A-Z]/g, function(c) {
             return '-' + c.toLowerCase();
-        }) + '.js';
+        });
+}
+
+/**
+ * Generates a filename based on the class name given
+ * @param {string} className
+ * @returns {string}
+ */
+function generateFileName(className) {
+    return generateFolderName(className) + '.js';
 }
 
 /**
@@ -41,7 +50,63 @@ function compile(ast, usingPsykick3D) {
     componentCode = generateComponents(ast.components);
     templateCode = generateTemplates(ast.templates);
     systemCode = generateSystems(ast.systems);
-    //console.log(JSON.stringify(ast, null, 4));
+}
+
+function save() {
+    if (gameName === '') {
+        throw new Error('Code must first by compiled before saving');
+    }
+
+    // Create the folder structure
+    var rootFolder = relativeTo(generateFolderName(gameName)),
+        componentsFolder = path.resolve(rootFolder, 'components'),
+        systemsFolder = path.resolve(rootFolder, 'systems');
+
+    fs.mkdirSync(rootFolder);
+    fs.mkdirSync(componentsFolder);
+    fs.mkdirSync(systemsFolder);
+
+    for (var i = 0, len = componentCode.length; i < len; i++) {
+        (function(component) {
+            fs.writeFile(path.resolve(componentsFolder, component.filename), component.code, function(err) {
+                if (err) {
+                    throw err;
+                }
+
+                console.log('Created components/' + component.filename);
+            });
+        })(componentCode[i]);
+    }
+
+    for (var i = 0, len = systemCode.length; i < len; i++) {
+        (function(system) {
+            fs.writeFile(path.resolve(systemsFolder, system.filename), system.code, function(err) {
+                if (err) {
+                    throw err;
+                }
+
+                console.log('Created systems/' + system.filename);
+            });
+        })(systemCode[i]);
+    }
+
+    // Generate the factory code
+    var factoryCode = ['var World = require(\'' + psykickVersion + '\');\n'];
+    factoryCode.push('var Factory = {');
+    for (var i = 0, len = templateCode.length; i < len; i++) {
+        var separator = (i < len - 1) ? ',' : '';
+        factoryCode.push(templateCode[i].code + separator);
+    }
+    factoryCode.push('};\n');
+    factoryCode.push('module.exports = Factory;');
+
+    fs.writeFile(path.resolve(rootFolder, 'factory.js'), factoryCode.join('\n'), function(err) {
+        if (err) {
+            throw err;
+        }
+
+        console.log('Created factory.js');
+    });
 }
 
 function generateComponents(components) {
@@ -119,7 +184,7 @@ function generateTemplates(templates) {
             requiredComponents[componentName] = generateFileName(componentName);
             tmplFunctionCode.push('\t\t' +
                 'entity.addComponent(new ' + componentName +
-                    '(' + util.formatValue(storedTemplate[componentName], 3) + ');'
+                    '(' + util.formatValue(storedTemplate[componentName], 3) + '));'
                 );
         }
         tmplFunctionCode.push('\t\treturn entity;');
@@ -223,19 +288,17 @@ function generateSystems(systems) {
 
         code.push({
             name: system.name,
+            filename: generateFileName(system.name),
             code: requiredModuleCode.concat(systemCode).concat(inheritanceCode).concat(exportCode).join('\n')
         });
     }
-
-    code.forEach(function(val) {
-        console.log(val.code);
-    });
 
     return code;
 }
 
 module.exports = {
     compile: compile,
+    save: save,
     getComponents: function() {
         return componentCode.slice(0);
     },

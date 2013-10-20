@@ -27,3 +27,4 @@ try {
 }
 
 Compiler.compile(ast, use3D);
+Compiler.save();
