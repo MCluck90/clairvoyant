@@ -1,0 +1,70 @@
+// This will be used to determine the folder name (if built with the "create folder" option)
+NameOfTheGame {
+    // Each of these will be saved in the "components" folder
+    Components {
+        // Each component is saved in it's own file matching it's name
+        Rectangle {
+            // Each of these is a property and it's associated default value
+            x      => 0,
+            y      => 0,
+            width  => 100,
+            height => 200
+        }
+
+        // This one will be saved in texture-color.js
+        TextureColor {
+            r => 0,
+            g => 0,
+            b => 0
+        }
+    }
+
+    // These will all be placed in a Factory object
+    Templates {
+        // Factory.createBox will produce this type of entity
+        Box [
+            // These are the required components
+            Rectangle,
+            TextureColor
+        ]
+
+        /*
+         * Entity templates can "inherit" from other templates
+         * This means that they'll take on whatever components their parent has
+         */
+        BigBox:Box [
+            Rectangle {
+                // If this entity should have different defaults for the components,
+                // set them here
+                width => 1e5,
+                height => 2e5
+            }
+
+            // It still has the TextureColor component from the Box template
+        ]
+    }
+
+    Systems {
+        // Psykick3D only has one "type" of system so we can define it directly like so
+        RenderRectangle {
+            // Each system requires that it's entities have certain components
+            // You can define them just like we do for entities
+            Components [ Rectangle, TextureColor ]
+        }
+
+        // Psykick2D, on the other hand, has Render and Behavior systems
+        // so we have to specify which one it will inherit from
+        Render2DRectangle:RenderSystem {
+            // You also have the option to specify a type of entity to accept
+            // YOU CANNOT HAVE BOTH COMPONENTS AND ENTITIES
+            Entities [ Box, BigBox ]
+        }
+
+        /**
+         * NOTE: If a 2D system is specified during a 3D build then a warning
+         *       will be issued and the parent system type will be ignored.
+         *       However, if a system does not inherit from RenderSystem or BehaviorSystem
+         *       in a 2D build, this will result in an error can the build will not continue.
+         */
+    }
+}
