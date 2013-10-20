@@ -435,7 +435,7 @@ PropertyName
  *     BLOCKS     *
  *================*/
 MainBlock
-    = Identifier __ "{" __ blocks:(SubBlockList __)? "}" {
+    = name:Identifier __ "{" __ blocks:(SubBlockList __)? "}" {
         blocks = blocks[0] || [];
         var components = [],
             templates = [],
@@ -462,6 +462,7 @@ MainBlock
 
         return {
             type: "MainBlock",
+            name: name,
             components: components,
             templates: templates,
             systems: systems
