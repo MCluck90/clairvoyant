@@ -4,7 +4,7 @@ var util = require('./util.js'),
     componentCode = [],
     templateCode = [],
     systemCode = [],
-    use3D;
+    psykickVersion = 'psykick';
 
 function generateFileName(className) {
     return className
@@ -19,7 +19,9 @@ function generateFileName(className) {
 }
 
 function compile(ast, usingPsykick3D) {
-    use3D = !!usingPsykick3D;
+    if (usingPsykick3D) {
+        psykickVersion = 'psykick3d';
+    }
     //console.log(JSON.stringify(ast, null, 4));
     componentCode = generateComponents(ast.components);
     //templateCode = generateTemplates(ast.templates);
@@ -41,9 +43,23 @@ function generateComponents(components) {
             constructorCode = [],
             initCode = util.generateInitializerCode(component.properties);
 
+        constructorCode.push(util.generateRequireStatements([
+            {
+                name: 'Component',
+                baseModule: psykickVersion,
+                moduleAttribute: 'Component'
+            },
+            {
+                name: 'Helper',
+                baseModule: psykickVersion,
+                moduleAttribute: 'Helper'
+            }
+        ]) + '\n');
         constructorCode.push('var ' + component.name + ' = function(options) {');
         constructorCode.push(initCode);
         constructorCode.push('};');
+        constructorCode.push('\n' + util.generateInheritanceCode(component.name, 'Component'));
+        constructorCode.push('\n' + util.generateExportsCode(component.name));
 
         code.push({
             name: component.name,

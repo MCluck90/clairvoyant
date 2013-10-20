@@ -61,6 +61,32 @@ var Util = {
         }
 
         return wrapperCode + defaultsCode.join('\n') + '\n\t});\n\n' + propertyCode.join('\n');
+    },
+    generateRequireStatements: function(requiredModules) {
+        var code = 'var ';
+        for (var i = 0, len = requiredModules.length; i < len; i++) {
+            if (i > 0) {
+                code += '    ';
+            }
+            var mod = requiredModules[i];
+            code += mod.name + ' = require(\'' + mod.baseModule + '\')';
+            if (mod.moduleAttribute) {
+                code += '.' + mod.moduleAttribute;
+            }
+            if (i < len - 1) {
+                code += ',\n';
+            } else {
+                code += ';';
+            }
+        }
+
+        return code;
+    },
+    generateInheritanceCode: function(derived, base) {
+        return 'Helper.inherit(' + derived + ', ' + base + ');';
+    },
+    generateExportsCode: function(exportMe) {
+        return 'module.exports = ' + exportMe + ';';
     }
 };
 
