@@ -493,6 +493,7 @@ SubBlockList
 
 SubBlock
     =  ComponentBlock
+    / TemplateBlock
 
 ComponentBlock
     = "Components" __ "{" __ components:(ComponentList __)? __ "}" {
@@ -518,6 +519,61 @@ Component
             name: name,
             properties: value.properties
         };
+    }
+
+TemplateBlock
+    = "Templates" __ "{" __ templates:(TemplateList __)? __ "}" {
+        return {
+            type: "TemplateBlock",
+            templates: templates !== "" ? templates[0] : []
+        };
+    }
+
+TemplateList
+    = head:Template __ tail:(__ Template)* {
+        var result = [head];
+        for (var i = 0, len = tail.length; i < len; i++) {
+            result.push(tail[i][1]);
+        }
+        return result;
+    }
+
+Template
+    = name:Identifier parent:(":" Identifier)? __ "[" __ components:(TemplateComponentList __)? "]" {
+        return {
+            type: "Template",
+            name: name,
+            parent: parent !== "" ? parent[1] : null,
+            components: components !== "" ? components[0] : []
+        };
+    }
+
+TemplateComponentList
+    = head:(Component / Identifier) tail:(__ "," __ (Component / Identifier))* {
+        var element = head,
+            result = [];
+        if (typeof element === 'string') {
+            result.push({
+                type: 'Component',
+                name: element,
+                properties: []
+            });
+        } else {
+            result.push(element);
+        }
+        for (var i = 0, len = tail.length; i < len; i++) {
+            element = tail[i][3];
+            if (typeof element === 'string') {
+                result.push({
+                    type: 'Component',
+                    name: element,
+                    properties: []
+                });
+            } else {
+                result.push(element);
+            }
+        }
+        return result;
     }
 
 Program

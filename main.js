@@ -1,7 +1,7 @@
 'use strict';
 
 if (process.argv.length < 3) {
-    console.log('Usage: node index.js inputfile [3d]');
+    console.log('Usage: node main.js inputfile [3d]');
     process.exit(1);
 }
 
