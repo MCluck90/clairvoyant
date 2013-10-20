@@ -3,7 +3,6 @@
  *
  * A lot of the core definitions were taken from the PEG.js Javascript example grammar
  */
-
 start
     = __ program:Program __ { return program; }
 
@@ -304,37 +303,9 @@ RegularExpressionFlags
 /*====================*
  *      TOKENS        *
  *====================*/
-
-BreakToken      = "break"       !IdentifierPart
-CaseToken       = "case"        !IdentifierPart
-CatchToken      = "catch"       !IdentifierPart
-ContinueToken   = "continue"    !IdentifierPart
-DebuggerToken   = "debugger"    !IdentifierPart
-DefaultToken    = "default"     !IdentifierPart
-DeleteToken     = "delete"      !IdentifierPart { return "delete"; }
-DoToken         = "do"          !IdentifierPart
-ElseToken       = "else"        !IdentifierPart
 FalseToken      = "false"       !IdentifierPart
-FinallyToken    = "finally"     !IdentifierPart
-ForToken        = "for"         !IdentifierPart
-FunctionToken   = "function"    !IdentifierPart
-GetToken        = "get"         !IdentifierPart
-IfToken         = "if"          !IdentifierPart
-InstanceofToken = "instanceof"  !IdentifierPart { return "instanceof"; }
-InToken         = "in"          !IdentifierPart { return "in"; }
-NewToken        = "new"         !IdentifierPart
 NullToken       = "null"        !IdentifierPart
-ReturnToken     = "return"      !IdentifierPart
-SetToken        = "set"         !IdentifierPart
-SwitchToken     = "switch"      !IdentifierPart
-ThisToken       = "this"        !IdentifierPart
-ThrowToken      = "throw"       !IdentifierPart
 TrueToken       = "true"        !IdentifierPart
-TypeofToken     = "typeof"      !IdentifierPart { return "typeof"; }
-VarToken        = "var"         !IdentifierPart
-VoidToken       = "void"        !IdentifierPart { return "void"; }
-WhileToken      = "while"       !IdentifierPart
-WithToken       = "with"        !IdentifierPart
 
 /*======================================*
  *     UNICODE CHARACTER CATEGORIES     *
@@ -383,21 +354,9 @@ _
 __
     = (WhiteSpace / LineTerminatorSequence / Comment)*
 
-/*=====================*
- *     EXPRESSIONS     *
- *=====================*/
-
-PrimaryExpression
-    = name:Identifier {
-        return {
-            type: "Variable",
-            name: name
-        };
-    }
-    / Literal
-    / ArrayLiteral
-    / ObjectLiteral
-
+/*===================================*
+ *     OBJECT AND ARRAY LITERALS     *
+ *===================================*/
 ArrayLiteral
     = "[" __ elision:(Elision __)? "]" {
         return {
@@ -470,10 +429,10 @@ PropertyName
     / StringLiteral
     / NumericLiteral
 
+
 /*================*
  *     BLOCKS     *
  *================*/
-
 MainBlock
     = Identifier __ "{" __ blocks:(SubBlockList __)? "}" {
         return {
@@ -496,6 +455,9 @@ SubBlock
     / TemplateBlock
     / SystemBlock
 
+/*====================*
+ *     COMPONENTS     *
+ *====================*/
 ComponentBlock
     = "Components" __ "{" __ components:(ComponentList __)? __ "}" {
         return {
@@ -522,6 +484,9 @@ Component
         };
     }
 
+/*===================*
+ *     TEMPLATES     *
+ *===================*/
 TemplateBlock
     = "Templates" __ "{" __ templates:(TemplateList __)? __ "}" {
         return {
@@ -577,6 +542,9 @@ TemplateComponentList
         return result;
     }
 
+/*=================*
+ *     SYSTEMS     *
+ *=================*/
 SystemBlock
     = "Systems" __ "{" __ systems:(SystemList __)? __ "}" {
         return {
@@ -630,5 +598,6 @@ SystemIdentifierList
         return result;
     }
 
+// Launches into processing the main block
 Program
     = MainBlock
