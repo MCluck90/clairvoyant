@@ -492,8 +492,9 @@ SubBlockList
     }
 
 SubBlock
-    =  ComponentBlock
+    = ComponentBlock
     / TemplateBlock
+    / SystemBlock
 
 ComponentBlock
     = "Components" __ "{" __ components:(ComponentList __)? __ "}" {
@@ -572,6 +573,59 @@ TemplateComponentList
             } else {
                 result.push(element);
             }
+        }
+        return result;
+    }
+
+SystemBlock
+    = "Systems" __ "{" __ systems:(SystemList __)? __ "}" {
+        return {
+            type: "SystemBlock",
+            systems: systems !== "" ? systems[0] : []
+        };
+    }
+
+SystemList
+    = head:System tail:(__ System)* {
+        var result = [head];
+        for (var i = 0, len = tail.length; i < len; i++) {
+            result.push(tail[i][1]);
+        }
+        return result;
+    }
+
+System
+    = name:Identifier parent:(":" Identifier)?  __ "{" __
+        properties:(SystemComponentList / SystemEntityList)? __ "}" {
+        return {
+            type: "System",
+            name: name,
+            parent: parent !== "" ? parent[1] : null,
+            properties: properties !== "" ? properties : []
+        };
+    }
+
+SystemComponentList "component list"
+    = "Components" _ "[" __ components:(SystemIdentifierList __)? "]" {
+        return {
+            type: "ComponentList",
+            components: components !== "" ? components[0] : []
+        };
+    }
+
+SystemEntityList "entity list"
+    = "Entities" _ "[" __ entities:(SystemIdentifierList __)? "]" {
+        return {
+            type: "EntityList",
+            entities: entities !== "" ? entities[0] : []
+        };
+    }
+
+SystemIdentifierList
+    = head:Identifier tail:(__ "," __ Identifier)* {
+        var result = [head];
+        for (var i = 0, len = tail.length; i < len; i++) {
+            result.push(tail[i][3]);
         }
         return result;
     }
