@@ -52,19 +52,25 @@ function compile(ast, usingPsykick3D) {
     systemCode = generateSystems(ast.systems);
 }
 
-function save() {
+function save(rootFolder) {
     if (gameName === '') {
         throw new Error('Code must first by compiled before saving');
     }
 
     // Create the folder structure
-    var rootFolder = relativeTo(generateFolderName(gameName)),
-        componentsFolder = path.resolve(rootFolder, 'components'),
+    rootFolder = relativeTo(rootFolder);
+    var componentsFolder = path.resolve(rootFolder, 'components'),
         systemsFolder = path.resolve(rootFolder, 'systems');
 
-    fs.mkdirSync(rootFolder);
-    fs.mkdirSync(componentsFolder);
-    fs.mkdirSync(systemsFolder);
+    try {
+        fs.mkdirSync(rootFolder);
+    } catch(e) {}
+    try {
+        fs.mkdirSync(componentsFolder);
+    } catch(e) {}
+    try {
+        fs.mkdirSync(systemsFolder);
+    } catch(e) {}
 
     for (var i = 0, len = componentCode.length; i < len; i++) {
         (function(component) {

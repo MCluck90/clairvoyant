@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "pegjs": "git://github.com/dmajda/pegjs#5312e124cde69d328d6de86809fd68d1a6b1399e",
-    "xtend": "~2.1.1"
+    "xtend": "~2.1.1",
+    "optimist": "~0.6.0"
   }
 }
