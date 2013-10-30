@@ -137,6 +137,9 @@ function generateComponents(components) {
                 moduleAttribute: 'Helper'
             }
         ]) + '\n');
+        constructorCode.push(util.generateDocCode({
+            constructor: true
+        }, component.properties));
         constructorCode.push('var ' + component.name + ' = function(options) {');
         constructorCode.push(initCode);
         constructorCode.push('};');
