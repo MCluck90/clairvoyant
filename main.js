@@ -1,7 +1,7 @@
 'use strict';
 
 var argv = require('optimist')
-    .usage('Usage: $0')
+    .usage('Usage: cvt -s source -o output [options]')
     .demand('s')
     .alias('s', 'src')
     .describe('s', 'Source file ')

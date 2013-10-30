@@ -1,5 +1,7 @@
 {
   "name": "clairvoyant",
+  "preferGlobal": true,
+  "author": "Mike Cluck <mcluck90@gmail.com>",
   "version": "0.0.1",
   "description": "Build Psykick game skeletons using a custom language",
   "repository": {
@@ -18,6 +20,9 @@
       "email": "mcluck90@gmail.com"
     }
   ],
+  "bin": {
+	"cvt": "./bin/clairvoyant"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/MCluck90/clairvoyant/issues"
