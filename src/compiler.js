@@ -13,7 +13,7 @@ var util = require('./util.js'),
     templatesByName = {},
     systemCode = [],
     gameName = '',
-    psykickVersion = 'psykick';
+    psykickVersion = 'psykick2d';
 
 function generateFolderName(f) {
     return f
