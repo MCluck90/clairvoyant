@@ -97,11 +97,11 @@ function save(rootFolder) {
     }
 
     // Generate the factory code
-    var factoryCode = ['var World = require(\'' + psykickVersion + '\');\n'];
+    var factoryCode = [templateCode.requireStatements];
     factoryCode.push('var Factory = {');
-    for (var i = 0, len = templateCode.length; i < len; i++) {
+    for (var i = 0, len = templateCode.factoryCode.length; i < len; i++) {
         var separator = (i < len - 1) ? ',' : '';
-        factoryCode.push(templateCode[i].code + separator);
+        factoryCode.push(templateCode.factoryCode[i].code + separator);
     }
     factoryCode.push('};\n');
     factoryCode.push('module.exports = Factory;');
@@ -205,7 +205,38 @@ function generateTemplates(templates) {
         });
     }
 
-    return code;
+    var result = {
+            requireStatements: '',
+            factoryCode: code
+        },
+        componentNames = Object.keys(requiredComponents).sort(function(a, b) {
+            if (a.length < b.length) {
+                return -1;
+            } else if (b.length < a.length) {
+                return 1;
+            } else if (a < b) {
+                return -1;
+            } else {
+                return 1;
+            }
+        }),
+        requiredModules = [{
+            name: 'World',
+            baseModule: psykickVersion,
+            moduleAttribute: 'World'
+        }];
+
+    for (var i = 0, len = componentNames.length; i < len; i++) {
+        var name = componentNames[i];
+        requiredModules.push({
+            name: name,
+            baseModule: './components/' + requiredComponents[name]
+        });
+    }
+
+    result.requireStatements = util.generateRequireStatements(requiredModules) + '\n';
+
+    return result;
 }
 
 function generateSystems(systems) {
