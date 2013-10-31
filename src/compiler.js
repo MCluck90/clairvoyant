@@ -141,6 +141,7 @@ function generateComponents(components) {
             constructor: true
         }, component.properties));
         constructorCode.push('var ' + component.name + ' = function(options) {');
+        constructorCode.push('\tthis.NAME = \'' + component.name + '\';\n');
         constructorCode.push(initCode);
         constructorCode.push('};');
         constructorCode.push('\n' + util.generateInheritanceCode(component.name, 'Component'));
