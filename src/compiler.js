@@ -15,25 +15,23 @@ var util = require('./util.js'),
     gameName = '',
     psykickVersion = 'psykick2d';
 
-function generateFolderName(f) {
-    return f
-        .replace(/component/gi, '')
-        .replace(/system/gi, '')
-        .replace(/^[A-Z]/, function(c) {
-            return c.toLowerCase();
-        })
-        .replace(/[A-Z]/g, function(c) {
-            return '-' + c.toLowerCase();
-        });
-}
-
 /**
  * Generates a filename based on the class name given
  * @param {string} className
  * @returns {string}
  */
 function generateFileName(className) {
-    return generateFolderName(className) + '.js';
+    return className
+        .replace(/component/gi, '')
+        .replace(/system/gi, '')
+        .replace('2D', '2d')
+        .replace('3D', '3d')
+        .replace(/^[A-Z]/, function(c) {
+            return c.toLowerCase();
+        })
+        .replace(/[A-Z]/g, function(c) {
+            return '-' + c.toLowerCase();
+        }) + '.js';
 }
 
 /**
