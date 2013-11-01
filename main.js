@@ -10,6 +10,10 @@ var argv = require('optimist')
     .describe('o', 'Name of the folder to output the project to')
     .default('3d', false)
     .describe('3d', 'If set, will compile for Psykick3D')
+    .default('fail-on-warning', false)
+    .describe('fail-on-warning', 'If set, compilation will fail when a warning is issued')
+    .default('overwrite', false)
+    .describe('overwrite', 'Overwrite pre-existing files')
     .argv;
 
 var PEG = require('pegjs'),
@@ -30,5 +34,9 @@ try {
     console.log('Line ' + e.line + ', Column ' + e.column + ': ' + e.message);
 }
 
-Compiler.compile(ast, argv['3d']);
+Compiler.compile(ast, {
+    use3D: !!argv['3d'],
+    failOnWarn: !!argv['fail-on-warning'],
+    overwrite: argv.overwrite
+});
 Compiler.save(argv.o);

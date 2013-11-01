@@ -23,6 +23,9 @@ var fs = require('fs'),
     // Version of Psykick to compile for
     psykickVersion = 'psykick2d',
 
+    // If true, will overwrite existing files
+    overwriteFiles = false,
+
     /**
      * Returns a path relative to the working directory
      * @param {string} p
@@ -36,12 +39,20 @@ var fs = require('fs'),
         console.log(clc.yellowBright.bold('WARN:') + ' ' + str);
     },
 
-    logHeader = function(str) {
+    logHeader = function(str, alreadyExists) {
         console.log('/' + str);
+        if (alreadyExists) {
+            process.stdout.write(clc.move(40, -1));
+            console.log('(already exists)');
+        }
     },
 
-    logFile = function(f) {
+    logFile = function(f, alreadyExists) {
         console.log('  - ' + f);
+        if (alreadyExists) {
+            process.stdout.write(clc.move(40, -1));
+            console.log('(already exists)');
+        }
     };
 
 /**
@@ -66,12 +77,25 @@ function generateFileName(className) {
 /**
  * Compile the components/templates/systems from the AST
  * @param ast
- * @param usingPsykick3D
+ * @param {Object}  compileOptions
+ * @param {boolean} compileOptions.use3D
+ * @param {boolean} compileOptions.failOnWarn
+ * @param {boolean} compileOptions.overwrite
  */
-function compile(ast, usingPsykick3D) {
-    if (usingPsykick3D) {
+function compile(ast, compileOptions) {
+    if (compileOptions.use3D) {
         psykickVersion = 'psykick3d';
     }
+
+    if (compileOptions.failOnWarn) {
+        var oldWarn = warning;
+        warning = function(str) {
+            oldWarn(str);
+            process.exit(1);
+        };
+    }
+
+    overwriteFiles = compileOptions.overwrite;
 
     gameName = ast.name;
     componentCode = generateComponents(ast.components);
@@ -107,14 +131,20 @@ function save(rootFolder) {
     logHeader('components');
     for (var i = 0, len = componentCode.length; i < len; i++) {
         (function(component) {
-            fs.writeFile(path.resolve(componentsFolder, component.filename), component.code, function(err) {
-                if (err) {
-                    console.log('Error writing ' + component.filename);
-                    throw err;
-                }
-            });
+            var filePath = path.resolve(componentsFolder, component.filename),
+                writeToFile = (overwriteFiles || !fs.existsSync(filePath));
 
-            logFile(component.filename);
+            if (writeToFile) {
+                fs.writeFile(filePath, component.code,  function(err) {
+                    if (err) {
+                        console.log('Error writing ' + component.filename);
+                        throw err;
+                    }
+                });
+                logFile(component.filename);
+            } else {
+                logFile(component.filename, true);
+            }
         })(componentCode[i]);
     }
 
@@ -122,35 +152,49 @@ function save(rootFolder) {
     logHeader('systems');
     for (var i = 0, len = systemCode.length; i < len; i++) {
         (function(system) {
-            fs.writeFile(path.resolve(systemsFolder, system.filename), system.code, function(err) {
-                if (err) {
-                    console.log('Error writing ' + system.filename);
-                    throw err;
-                }
-            });
+            var filePath = path.resolve(systemsFolder, system.filename),
+                writeToFile = (overwriteFiles || !fs.existsSync(filePath));
 
-            logFile(system.filename);
+            if (writeToFile) {
+                fs.writeFile(path.resolve(systemsFolder, system.filename), system.code, function(err) {
+                    if (err) {
+                        console.log('Error writing ' + system.filename);
+                        throw err;
+                    }
+                });
+
+                logFile(system.filename);
+            } else {
+                logFile(system.filename, true);
+            }
         })(systemCode[i]);
     }
 
     // Generate the factory code
-    var factoryCode = [templateCode.requireStatements];
-    factoryCode.push('var Factory = {');
-    for (var i = 0, len = templateCode.factoryCode.length; i < len; i++) {
-        var separator = (i < len - 1) ? ',' : '';
-        factoryCode.push(templateCode.factoryCode[i].code + separator);
-    }
-    factoryCode.push('};\n');
-    factoryCode.push('module.exports = Factory;');
+    var factoryPath = path.resolve(rootFolder, 'factory.js'),
+        writeFactoryFile = (overwriteFiles || !fs.existsSync(factoryPath));
 
-    // Generate the factory file
-    logHeader('factory.js');
-    fs.writeFile(path.resolve(rootFolder, 'factory.js'), factoryCode.join('\n'), function(err) {
-        if (err) {
-            console.log('Error writing factory.js');
-            throw err;
+    if (writeFactoryFile) {
+        var factoryCode = [templateCode.requireStatements];
+        factoryCode.push('var Factory = {');
+        for (var i = 0, len = templateCode.factoryCode.length; i < len; i++) {
+            var separator = (i < len - 1) ? ',' : '';
+            factoryCode.push(templateCode.factoryCode[i].code + separator);
         }
-    });
+        factoryCode.push('};\n');
+        factoryCode.push('module.exports = Factory;');
+
+        // Generate the factory file
+        logHeader('factory.js');
+        fs.writeFile(path.resolve(rootFolder, 'factory.js'), factoryCode.join('\n'), function(err) {
+            if (err) {
+                console.log('Error writing factory.js');
+                throw err;
+            }
+        });
+    } else {
+        logHeader('factory.js', true);
+    }
 }
 
 /**
