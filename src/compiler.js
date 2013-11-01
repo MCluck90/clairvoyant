@@ -50,6 +50,10 @@ function compile(ast, usingPsykick3D) {
     systemCode = generateSystems(ast.systems);
 }
 
+/**
+ * Saves the compiled code into the given directory
+ * @param {string} rootFolder
+ */
 function save(rootFolder) {
     if (gameName === '') {
         throw new Error('Code must first by compiled before saving');
@@ -70,6 +74,7 @@ function save(rootFolder) {
         fs.mkdirSync(systemsFolder);
     } catch(e) {}
 
+    // Generate the component files
     for (var i = 0, len = componentCode.length; i < len; i++) {
         (function(component) {
             fs.writeFile(path.resolve(componentsFolder, component.filename), component.code, function(err) {
@@ -82,6 +87,7 @@ function save(rootFolder) {
         })(componentCode[i]);
     }
 
+    // Generate the system files
     for (var i = 0, len = systemCode.length; i < len; i++) {
         (function(system) {
             fs.writeFile(path.resolve(systemsFolder, system.filename), system.code, function(err) {
@@ -104,6 +110,7 @@ function save(rootFolder) {
     factoryCode.push('};\n');
     factoryCode.push('module.exports = Factory;');
 
+    // Generate the factory file
     fs.writeFile(path.resolve(rootFolder, 'factory.js'), factoryCode.join('\n'), function(err) {
         if (err) {
             throw err;
@@ -113,6 +120,11 @@ function save(rootFolder) {
     });
 }
 
+/**
+ * Generates the code for each of the Components
+ * @param {Component[]} components
+ * @returns {Array}
+ */
 function generateComponents(components) {
     var code = [];
 
@@ -157,6 +169,11 @@ function generateComponents(components) {
     return code;
 }
 
+/**
+ * Generate the code for each of the Entity templates
+ * @param {Template[]} templates
+ * @returns {{requireStatements: string, factoryCode: Array}}
+ */
 function generateTemplates(templates) {
     var code = [],
         requiredComponents = {};
@@ -237,6 +254,11 @@ function generateTemplates(templates) {
     return result;
 }
 
+/**
+ * Generate the code for each of the Systems
+ * @param {System[]} systems
+ * @returns {Array}
+ */
 function generateSystems(systems) {
     var code = [];
 
@@ -337,16 +359,7 @@ function generateSystems(systems) {
 
 module.exports = {
     compile: compile,
-    save: save,
-    getComponents: function() {
-        return componentCode.slice(0);
-    },
-    getTemplates: function() {
-        return templateCode.slice(0);
-    },
-    getSystems: function() {
-        return systemCode.slice(0);
-    }
+    save: save
 };
 
 /**
