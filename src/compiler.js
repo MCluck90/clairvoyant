@@ -1,19 +1,48 @@
 'use strict';
 
-var util = require('./util.js'),
-    extend = require('xtend'),
-    fs = require('fs'),
+var fs = require('fs'),
+    clc = require('cli-color'),
     path = require('path'),
+    util = require('./util.js'),
+    extend = require('xtend'),
+
+    // Collection of Components and their compiled code
+    componentCode = [],
+    componentsByName = {},
+
+    // Collection of Templates and their compiled code
+    templateCode = [],
+    templatesByName = {},
+
+    // Collection of compiled System code
+    systemCode = [],
+
+    // Name of the game
+    gameName = '',
+
+    // Version of Psykick to compile for
+    psykickVersion = 'psykick2d',
+
+    /**
+     * Returns a path relative to the working directory
+     * @param {string} p
+     * @returns {string}
+     */
     relativeTo = function(p) {
         return path.resolve(process.cwd(), p);
     },
-    componentCode = [],
-    componentsByName = {},
-    templateCode = [],
-    templatesByName = {},
-    systemCode = [],
-    gameName = '',
-    psykickVersion = 'psykick2d';
+
+    warning = function(str) {
+        console.log(clc.yellowBright.bold('WARN:') + ' ' + str);
+    },
+
+    logHeader = function(str) {
+        console.log('/' + str);
+    },
+
+    logFile = function(f) {
+        console.log('  - ' + f);
+    };
 
 /**
  * Generates a filename based on the class name given
@@ -75,28 +104,32 @@ function save(rootFolder) {
     } catch(e) {}
 
     // Generate the component files
+    logHeader('components');
     for (var i = 0, len = componentCode.length; i < len; i++) {
         (function(component) {
             fs.writeFile(path.resolve(componentsFolder, component.filename), component.code, function(err) {
                 if (err) {
+                    console.log('Error writing ' + component.filename);
                     throw err;
                 }
-
-                console.log('Created components/' + component.filename);
             });
+
+            logFile(component.filename);
         })(componentCode[i]);
     }
 
     // Generate the system files
+    logHeader('systems');
     for (var i = 0, len = systemCode.length; i < len; i++) {
         (function(system) {
             fs.writeFile(path.resolve(systemsFolder, system.filename), system.code, function(err) {
                 if (err) {
+                    console.log('Error writing ' + system.filename);
                     throw err;
                 }
-
-                console.log('Created systems/' + system.filename);
             });
+
+            logFile(system.filename);
         })(systemCode[i]);
     }
 
@@ -111,12 +144,12 @@ function save(rootFolder) {
     factoryCode.push('module.exports = Factory;');
 
     // Generate the factory file
+    logHeader('factory.js');
     fs.writeFile(path.resolve(rootFolder, 'factory.js'), factoryCode.join('\n'), function(err) {
         if (err) {
+            console.log('Error writing factory.js');
             throw err;
         }
-
-        console.log('Created factory.js');
     });
 }
 
@@ -260,7 +293,8 @@ function generateTemplates(templates) {
  * @returns {Array}
  */
 function generateSystems(systems) {
-    var code = [];
+    var code = [],
+        ignoredInheritance = false;
 
     for (var i = 0, len = systems.length; i < len; i++) {
         var system = systems[i],
@@ -280,7 +314,8 @@ function generateSystems(systems) {
             inheritanceCode.push(util.generateInheritanceCode(system.name, 'System'));
 
             if (system.parent !== null) {
-                console.warn('Ignoring system inheritance on \'' + system.name + '\'');
+                warning('Ignoring system inheritance on \'' + system.name + '\'');
+                ignoredInheritance = true;
             }
         } else if (system.parent !== null) {
             switch (system.parent) {
@@ -352,6 +387,11 @@ function generateSystems(systems) {
             filename: generateFileName(system.name),
             code: requiredModuleCode.concat(systemCode).concat(inheritanceCode).concat(exportCode).join('\n')
         });
+    }
+
+    // Separate warning from file output
+    if (ignoredInheritance) {
+        console.log('');
     }
 
     return code;

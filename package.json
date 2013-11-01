@@ -2,7 +2,7 @@
   "name": "clairvoyant",
   "preferGlobal": true,
   "author": "Mike Cluck <mcluck90@gmail.com>",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Build Psykick game skeletons using a custom language",
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
     }
   ],
   "bin": {
-	"cvt": "./bin/clairvoyant"
+    "cvt": "./bin/clairvoyant"
   },
   "license": "MIT",
   "bugs": {
@@ -30,6 +30,7 @@
   "dependencies": {
     "pegjs": "git://github.com/dmajda/pegjs#5312e124cde69d328d6de86809fd68d1a6b1399e",
     "xtend": "~2.1.1",
-    "optimist": "~0.6.0"
+    "optimist": "~0.6.0",
+    "cli-color": "~0.2.3"
   }
 }
