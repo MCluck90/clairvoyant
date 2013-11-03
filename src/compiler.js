@@ -354,6 +354,11 @@ function generateSystems(systems) {
                     name: 'System',
                     baseModule: 'psykick3d',
                     moduleAttribute: 'System'
+                },
+                {
+                    name: 'Helper',
+                    baseModule: 'psykick3d',
+                    moduleAttribute: 'Helper'
                 }
             ]));
             inheritanceCode.push(util.generateInheritanceCode(system.name, 'System'));
@@ -368,8 +373,13 @@ function generateSystems(systems) {
                     requiredModuleCode.push(util.generateRequireStatements([
                         {
                             name: 'RenderSystem',
-                            baseModule: 'psykick',
+                            baseModule: 'psykick2d',
                             moduleAttribute: 'RenderSystem'
+                        },
+                        {
+                            name: 'Helper',
+                            baseModule: 'psykick2d',
+                            moduleAttribute: 'Helper'
                         }
                     ]));
                     inheritanceCode.push(util.generateInheritanceCode(system.name, 'RenderSystem'));
@@ -392,8 +402,13 @@ function generateSystems(systems) {
                     requiredModuleCode.push(util.generateRequireStatements([
                         {
                             name: 'BehaviorSystem',
-                            baseModule: 'psykick',
+                            baseModule: 'psykick2d',
                             moduleAttribute: 'BehaviorSystem'
+                        },
+                        {
+                            name: 'Helper',
+                            baseModule: 'psykick2d',
+                            moduleAttribute: 'Helper'
                         }
                     ]));
                     inheritanceCode.push(util.generateInheritanceCode(system.name, 'BehaviorSystem'));
