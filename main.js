@@ -43,9 +43,17 @@ var argv = require('optimist')
 
 try {
     // Parse any preprocessor messages
-    source = preprocessorParser.parse(source, {
+    var oldSource = preprocessorParser.parse(source, {
         sourceFolder: path.dirname(path.resolve(process.cwd(), argv.s))
     });
+
+    while (oldSource !== source) {
+        oldSource = source;
+        source = preprocessorParser.parse(source, {
+            sourceFolder: path.dirname(path.resolve(process.cwd(), argv.s))
+        });
+    }
+
 
     // Parse out the final source after any preprocessing
     var ast = sourceParser.parse(source);
