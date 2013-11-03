@@ -1,0 +1,9 @@
+Systems {
+    DrawRectangle:RenderSystem {
+        Entities [ Rectangle ]
+    }
+
+    MoveRectangle:BehaviorSystem {
+        Entities [ Rectangle ]
+    }
+}

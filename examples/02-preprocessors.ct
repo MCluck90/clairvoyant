@@ -1,0 +1,14 @@
+/**
+ * This example showcases basics of preprocessors:
+ * A mechanism for separating your game definition into multiple files
+ */
+PreProcessors {
+    // Load in the Component definitions
+    #include "./02-preprocessors/components.ct"
+
+    // Load in the Template definitions
+    #include "./02-preprocessors/templates.ct"
+
+    // Load in the System definitions
+    #include "./02-preprocessors/systems.ct"
+}

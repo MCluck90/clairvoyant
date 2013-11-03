@@ -1,0 +1,19 @@
+Templates {
+    Rectangle [
+        Position,
+        Size
+    ]
+
+    RedRectangle:Rectangle [
+        Color {
+            r => 255
+        }
+    ]
+
+    BigRectangle:Rectangle [
+        Size {
+            width => 2000,
+            height => 1000
+        }
+    ]
+}
