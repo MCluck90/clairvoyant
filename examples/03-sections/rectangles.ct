@@ -1,0 +1,31 @@
+Components {
+    Position {
+        x => 0,
+        y => 0
+    }
+
+    Size {
+        width => 0,
+        height => 0
+    }
+}
+
+Templates {
+    Rectangle [
+        Position,
+        Size
+    ]
+
+    BigRectangle:Rectangle [
+        Size {
+            width => 2000,
+            height => 1000
+        }
+    ]
+}
+
+Systems {
+    DrawRectangles:RenderSystem {
+        Entities [ Rectangle ]
+    }
+}

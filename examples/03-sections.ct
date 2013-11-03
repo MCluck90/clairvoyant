@@ -1,0 +1,10 @@
+/**
+ * All Components, Templates, and Systems don't need to be defined in the same block
+ * Here we see a how preprocessors can be used to separate definitions in to sections
+ */
+
+Sections {
+    #include "03-sections/rectangles.ct"
+
+    #include "03-sections/player.ct"
+}

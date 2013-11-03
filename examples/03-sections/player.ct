@@ -1,0 +1,39 @@
+Components {
+    PlayerState {
+        standing => true,
+        running => false,
+        falling => false,
+        jumping => false
+    }
+
+    Sprite {
+        texture => '',
+        origin => {
+            x => 0,
+            y => 0
+        },
+        size => {
+            x => 0,
+            y => 0
+        }
+    }
+}
+
+Templates {
+    Player [
+        PlayerState,
+        Sprite {
+            texture => 'player.png',
+            size => {
+                x => 32,
+                y => 64
+            }
+        }
+    ]
+}
+
+Systems {
+    PlayerMovement:BehaviorSystem {
+        Entities [ Player ]
+    }
+}
