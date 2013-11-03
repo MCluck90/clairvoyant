@@ -154,7 +154,8 @@ var Util = {
      * @returns {string}
      */
     generateRequireStatements: function(requiredModules) {
-        var code = 'var ';
+        // Make sure that everything has a 'use strict' statement
+        var code = '\'use strict\';\n\nvar ';
         for (var i = 0, len = requiredModules.length; i < len; i++) {
             if (i > 0) {
                 code += '    ';
