@@ -345,7 +345,8 @@ function generateSystems(systems) {
             requiredModuleCode = [],
             systemCode = ['var ' + system.name + ' = function() {'],
             requiredComponents = [],
-            inheritanceCode = [];
+            inheritanceCode = [],
+            onTickCode = [];
 
         if (psykickVersion === 'psykick3d') {
             requiredModuleCode.push(util.generateRequireStatements([
@@ -372,6 +373,19 @@ function generateSystems(systems) {
                         }
                     ]));
                     inheritanceCode.push(util.generateInheritanceCode(system.name, 'RenderSystem'));
+
+                    // Each RenderSystem should have a 'draw' function
+                    onTickCode = [
+                        '/**',
+                        ' * TODO: Write documentation',
+                        ' * @param {CanvasRenderingContext2D} c',
+                        ' */',
+                        system.name + '.prototype.draw = function(c) {',
+                            '\tfor (var i = 0, len = this.drawOrder.length; i < len; i++) {',
+                                '\t\tvar entity = this.drawOrder[i];',
+                            '\t}',
+                        '};\n'
+                    ];
                     break;
 
                 case 'BehaviorSystem':
@@ -383,6 +397,19 @@ function generateSystems(systems) {
                         }
                     ]));
                     inheritanceCode.push(util.generateInheritanceCode(system.name, 'BehaviorSystem'));
+
+                    // Each BehaviorSystem should have an 'update' function
+                    onTickCode = [
+                        '/**',
+                        ' * TODO: Write documentation',
+                        ' * @param {number} delta - Time since last update',
+                        ' */',
+                        system.name + '.prototype.update = function(delta) {',
+                            '\tfor (var i = 0, len = this.actionOrder.length; i < len; i++) {',
+                                '\t\tvar entity = this.actionOrder[i];',
+                            '\t}',
+                        '};\n'
+                    ];
                     break;
 
                 default:
@@ -429,7 +456,11 @@ function generateSystems(systems) {
         code.push({
             name: system.name,
             filename: generateFileName(system.name),
-            code: requiredModuleCode.concat(systemCode).concat(inheritanceCode).concat(exportCode).join('\n')
+            code: requiredModuleCode.concat(systemCode)
+                .concat(inheritanceCode)
+                .concat(onTickCode)
+                .concat(exportCode)
+                .join('\n')
         });
     }
 
