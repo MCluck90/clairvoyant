@@ -50,28 +50,40 @@ JSONReporter.prototype.error = function(err) {
 
 /**
  * Prepares a Component log
- * @param {ComponentMessage} component
+ * @param {ComponentMessage}  component
+ * @param {boolean}          [skipped=false]
  * @override
  */
-JSONReporter.prototype.logComponent = function(component) {
+JSONReporter.prototype.logComponent = function(component, skipped) {
+    if (skipped) {
+        component.skipped = true;
+    }
     this.message.components.push(component);
 };
 
 /**
  * Prepares a system log
- * @param {SystemMessage} system
+ * @param {SystemMessage}  system
+ * @param {boolean}       [skipped=false]
  * @override
  */
-JSONReporter.prototype.logSystem = function(system) {
+JSONReporter.prototype.logSystem = function(system, skipped) {
+    if (skipped) {
+        system.skipped = true;
+    }
     this.message.systems.push(system);
 };
 
 /**
  * Prepares the factory log
- * @param {FactoryMessage} factory
+ * @param {FactoryMessage}  factory
+ * @param {boolean}        [skipped=false]
  * @override
  */
-JSONReporter.prototype.logFactory = function(factory) {
+JSONReporter.prototype.logFactory = function(factory, skipped) {
+    if (skipped) {
+        factory.skipped = true;
+    }
     this.message.factory = factory;
 };
 
