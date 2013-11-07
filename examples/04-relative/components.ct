@@ -1,0 +1,12 @@
+Components {
+    Vector2D {
+        x => 0,
+        y => 0
+    }
+
+    Circle {
+        radius => 1
+    }
+}
+
+#include "./templates/templates.ct"

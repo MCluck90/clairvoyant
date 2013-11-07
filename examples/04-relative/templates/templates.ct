@@ -1,0 +1,5 @@
+Templates {
+    Sphere [ Vector2D, Circle ]
+}
+
+#include "../systems.ct"

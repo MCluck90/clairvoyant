@@ -1,0 +1,7 @@
+/**
+ * Here we see how files are loaded with relative paths
+ */
+
+Relative {
+    #include "04-relative/components.ct"
+}
