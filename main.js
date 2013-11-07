@@ -16,16 +16,9 @@ var argv = require('optimist')
     .describe('overwrite', 'Overwrite pre-existing files')
     .argv,
 
-    PEG = require('pegjs'),
     Compiler = require('./src/compiler.js'),
     fs = require('fs'),
     path = require('path'),
-
-    // Path to the Clairvoyant grammar
-    cvtGrammarPath = path.resolve(__dirname, './clairvoyant.pegjs'),
-
-    // Path to the preprocessor grammar
-    preprocessGrammarPath = path.resolve(__dirname, './preprocessor.pegjs'),
 
     // Loads up a file and returns it as a string
     loadFile = function(p) {
@@ -33,10 +26,10 @@ var argv = require('optimist')
     },
 
     // Parser for the preprocessor
-    preprocessorParser = PEG.buildParser(loadFile(preprocessGrammarPath)),
+    preprocessorParser = require('./parsers/preprocessor.js'),
 
     // Parser for the actual final source
-    sourceParser = PEG.buildParser(loadFile(cvtGrammarPath)),
+    sourceParser = require('./parsers/clairvoyant.js'),
 
     // Source code
     source = loadFile(argv.s);
