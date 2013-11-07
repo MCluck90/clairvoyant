@@ -553,12 +553,16 @@ module.exports = (function() {
 
         var fs = require('fs'),
             path = require('path'),
+            self = this,
             relativeTo = function(p) {
                 return path.resolve(options.sourceFolder, p);
             };
 
         function loadFile(p) {
-            return fs.readFileSync(relativeTo(p)).toString();
+            var srcFolder = path.resolve(options.sourceFolder, path.dirname(p));
+            return self.parse(fs.readFileSync(relativeTo(p)).toString(), {
+                sourceFolder: srcFolder
+            });
         }
 
 
