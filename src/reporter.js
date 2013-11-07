@@ -31,26 +31,32 @@ Reporter.prototype.error = function(err) {
 
 /**
  * Logs out a Component message
- * @param {ComponentMessage} component
+ * @param {ComponentMessage}  component
+ * @param {boolean}          [skipped=false]
  */
-Reporter.prototype.logComponent = function(component) {
-    console.log('Component: ' + component.name + ':' + component.path);
+Reporter.prototype.logComponent = function(component, skipped) {
+    var skipMsg = (skipped) ? ' (skipped)' : '';
+    console.log('Component: ' + component.name + ':' + component.path + skipMsg);
 };
 
 /**
  * Logs out a System message
- * @param {SystemMessage} system
+ * @param {SystemMessage}  system
+ * @param {boolean}       [skipped=false]
  */
-Reporter.prototype.logSystem = function(system) {
-    console.log('System: ' + system.name + ':' + system.type + ':' + system.path);
+Reporter.prototype.logSystem = function(system, skipped) {
+    var skipMsg = (skipped) ? ' (skipped)' : '';
+    console.log('System: ' + system.name + ':' + system.type + ':' + system.path + skipMsg);
 };
 
 /**
  * Logs out the Factory message
- * @param {FactoryMessage} factory
+ * @param {FactoryMessage}  factory
+ * @param {boolean}        [skipped=false]
  */
-Reporter.prototype.logFactory = function(factory) {
-    console.log('Factory: ' + factory.path);
+Reporter.prototype.logFactory = function(factory, skipped) {
+    var skipMsg = (skipped) ? ' (skipped)' : '';
+    console.log('Factory: ' + factory.path + skipMsg);
     for (var i = 0, len = factory.functions.length; i < len; i++) {
         var generator = factory.functions[i];
         console.log('\t' + generator.entityType + ':' + generator.functionName);
