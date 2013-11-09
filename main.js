@@ -14,10 +14,13 @@ var argv = require('optimist')
     .describe('fail-on-warning', 'If set, compilation will fail when a warning is issued')
     .default('overwrite', false)
     .describe('overwrite', 'Overwrite pre-existing files')
+    .default('reporter', 'default')
+    .describe('reporter', 'Build information reporter. Expects a filename from src/reporters with the .js')
     .argv,
 
     Compiler = require('./src/compiler.js'),
-    Reporter = require('./src/reporters/json.js'),
+    Reporter = (argv.reporter === 'default') ? require('./src/reporter.js').Reporter :
+                                               require('./src/reporters/' + argv.reporter + '.js'),
     Writer = require('./src/writer.js'),
     fs = require('fs'),
     path = require('path'),
@@ -37,6 +40,11 @@ var argv = require('optimist')
     source = loadFile(argv.s),
 
     ast, reporter, compiler, writer;
+
+// Make sure the user selected a valid reporter
+if (Reporter === undefined) {
+    throw new Error('Invalid reporter. Check src/reporters for available types');
+}
 
 reporter = new Reporter(!!argv['fail-on-warning']);
 
