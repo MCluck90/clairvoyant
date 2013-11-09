@@ -17,6 +17,8 @@ var argv = require('optimist')
     .argv,
 
     Compiler = require('./src/compiler.js'),
+    Reporter = require('./src/reporters/json.js'),
+    Writer = require('./src/writer.js'),
     fs = require('fs'),
     path = require('path'),
 
@@ -32,7 +34,11 @@ var argv = require('optimist')
     sourceParser = require('./parsers/clairvoyant.js'),
 
     // Source code
-    source = loadFile(argv.s);
+    source = loadFile(argv.s),
+
+    ast, reporter, compiler, writer;
+
+reporter = new Reporter(!!argv['fail-on-warning']);
 
 try {
     // Parse any preprocessor messages
@@ -40,16 +46,20 @@ try {
         sourceFolder: path.dirname(path.resolve(process.cwd(), argv.s))
     });
 
-
     // Parse out the final source after any preprocessing
-    var ast = sourceParser.parse(source);
-
-    Compiler.compile(ast, {
-        use3D: !!argv['3d'],
-        failOnWarn: !!argv['fail-on-warning'],
-        overwrite: argv.overwrite
-    });
-    Compiler.save(argv.o);
+    ast = sourceParser.parse(source);
 } catch(e) {
-    console.log('Line ' + e.line + ', Column ' + e.column + ': ' + e.message);
+    reporter.logSyntaxError(e);
 }
+
+// Compile it down to actual code
+compiler = new Compiler(ast, reporter, (argv['3d']) ? '3d' : '2d');
+writer = new Writer({
+    projectName: ast.name,
+    rootPath: path.resolve(process.cwd(), argv.o),
+    reporter: reporter,
+    overwrite: argv.overwrite
+});
+
+// Write the project to disk
+writer.save(compiler.compile());

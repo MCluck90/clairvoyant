@@ -1,23 +1,23 @@
 'use strict';
 
 var fs = require('fs'),
-    path = require('path');
+    path = require('path'),
+    
+    COMPONENT_FOLDER = 'components',
+    SYSTEM_FOLDER = 'systems',
+    FACTORY_FILE = 'factory.js';
 
 /**
  *
  * @param {object}   options
  * @param {string}   options.projectName
  * @param {string}   options.rootPath
- * @param {string}   options.componentsFolder
- * @param {string}   options.systemsFolder
  * @param {Reporter} options.reporter
  * @constructor
  */
 var Writer = function(options) {
     this.projectName = options.projectName;
     this.rootPath = options.rootPath;
-    this.componentsFolder = path.resolve(options.rootPath, options.componentsFolder);
-    this.systemsFolder = path.resolve(options.rootPath, options.systemsFolder);
     this.reporter = options.reporter;
     this.overwrite = options.overwrite;
 
@@ -27,9 +27,9 @@ var Writer = function(options) {
 /**
  * Saves the code to disk
  * @param {{
- *      components: CodeMessage[],
- *      systems: CodeMessage[],
- *      factory: CodeMessage
+ *      components: ComponentMessage[],
+ *      systems: SystemMessage[],
+ *      factory: FactoryMessage
  * }} code
  */
 Writer.prototype.save = function(code) {
@@ -37,14 +37,17 @@ Writer.prototype.save = function(code) {
                           code.systems.length +
                           1; // Factory
 
+    var componentFolder = path.resolve(this.rootPath, COMPONENT_FOLDER),
+        systemFolder = path.resolve(this.rootPath, SYSTEM_FOLDER);
+
     if (!fs.existsSync(this.rootPath)) {
         fs.mkdirSync(this.rootPath);
     }
-    if (!fs.existsSync(this.componentsFolder)) {
-        fs.mkdirSync(this.componentsFolder);
+    if (!fs.existsSync(componentFolder)) {
+        fs.mkdirSync(componentFolder);
     }
-    if (!fs.existsSync(this.systemsFolder)) {
-        fs.mkdirSync(this.systemsFolder);
+    if (!fs.existsSync(systemFolder)) {
+        fs.mkdirSync(systemFolder);
     }
 
     this.saveComponents(code.components);
@@ -54,30 +57,29 @@ Writer.prototype.save = function(code) {
 
 /**
  * Writes the components to disk
- * @param {CodeMessage[]} components
+ * @param {ComponentMessage[]} components
  */
 Writer.prototype.saveComponents = function(components) {
-    var componentFolder = this.componentsFolder,
-        self = this;
+    var self = this,
+        componentFolder = path.resolve(this.rootPath, COMPONENT_FOLDER);
     for (var i = 0, len = components.length; i < len; i++) {
         (function(component) {
             var filePath = path.resolve(componentFolder, component.filename),
                 writeToFile = (self.overwrite || !fs.existsSync(filePath));
-
             if (writeToFile) {
                 fs.writeFile(filePath, component.code, function(err) {
                     if (err) {
                         self.reporter.error(err);
                     } else {
-                        self.reporter.logComponent(component.message);
+                        self.reporter.logComponent(component);
                         self.remainingFiles -= 1;
                     }
-                    this.attemptComplete();
+                    self.attemptComplete();
                 });
             } else {
-                this.reporter.logComponent(component.message, true);
-                this.remainingFiles -= 1;
-                this.attemptComplete();
+                self.reporter.logComponent(component, true);
+                self.remainingFiles -= 1;
+                self.attemptComplete();
             }
         })(components[i]);
     }
@@ -85,14 +87,14 @@ Writer.prototype.saveComponents = function(components) {
 
 /**
  * Writes out the Systems to disk
- * @param {CodeMessage[]} systems
+ * @param {SystemMessage[]} systems
  */
 Writer.prototype.saveSystems = function(systems) {
-    var systemFolder = this.systemsFolder,
-        self = this;
+    var self = this,
+        systemsFolder = path.resolve(this.rootPath, SYSTEM_FOLDER);
     for (var i = 0, len = systems.length; i < len; i++) {
         (function(system) {
-            var filePath = path.resolve(systemFolder, system.filename),
+            var filePath = path.resolve(systemsFolder, system.filename),
                 writeToFile = (self.overwrite || !fs.existsSync(filePath));
 
             if (writeToFile) {
@@ -100,15 +102,15 @@ Writer.prototype.saveSystems = function(systems) {
                     if (err) {
                         self.reporter.error(err);
                     } else {
-                        self.reporter.logSystem(system.message);
+                        self.reporter.logSystem(system);
                         self.remainingFiles -= 1;
                         self.attemptComplete();
                     }
                 });
             } else {
-                this.reporter.logSystem(system.message, true);
-                this.remainingFiles -= 1;
-                this.attemptComplete();
+                self.reporter.logSystem(system, true);
+                self.remainingFiles -= 1;
+                self.attemptComplete();
             }
         })(systems[i]);
     }
@@ -116,23 +118,23 @@ Writer.prototype.saveSystems = function(systems) {
 
 /**
  * Writes out the Factory to disk
- * @param {CodeMessage} factory
+ * @param {FactoryMessage} factory
  */
 Writer.prototype.saveFactory = function(factory) {
     var self = this,
-        filePath = path.resolve(this.rootPath, factory.filename);
+        filePath = path.resolve(this.rootPath, FACTORY_FILE);
     if (this.overwrite || !fs.existsSync(filePath)) {
         fs.writeFile(filePath, factory.code, function(err) {
             if (err) {
                 self.reporter.error(err);
             } else {
-                self.reporter.logFactory(factory.message);
+                self.reporter.logFactory(factory);
                 self.remainingFiles -= 1;
                 self.attemptComplete();
             }
         });
     } else {
-        this.reporter.logFactory(factory.message, true);
+        this.reporter.logFactory(factory, true);
         this.remainingFiles -= 1;
         this.attemptComplete();
     }
@@ -147,20 +149,4 @@ Writer.prototype.attemptComplete = function() {
     }
 };
 
-/**
- * A message which the writer can understand
- * @param {string}                                        filename
- * @param {string}                                        code
- * @param {ComponentMessage|SystemMessage|FactoryMessage} message
- * @constructor
- */
-var CodeMessage = function(filename, code, message) {
-    this.filename = filename;
-    this.code = code;
-    this.message = message;
-};
-
-module.exports = {
-    Writer: Writer,
-    CodeMessage: CodeMessage
-};
+module.exports = Writer;

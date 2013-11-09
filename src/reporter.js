@@ -26,7 +26,8 @@ Reporter.prototype.warning = function(warning) {
  * @param {Error} err
  */
 Reporter.prototype.error = function(err) {
-    throw err;
+    console.log(err);
+    process.exit(1);
 };
 
 /**
@@ -36,7 +37,7 @@ Reporter.prototype.error = function(err) {
  */
 Reporter.prototype.logComponent = function(component, skipped) {
     var skipMsg = (skipped) ? ' (skipped)' : '';
-    console.log('Component: ' + component.name + ':' + component.path + skipMsg);
+    console.log('Component:' + component.name + ':' + component.filename + skipMsg);
 };
 
 /**
@@ -46,7 +47,7 @@ Reporter.prototype.logComponent = function(component, skipped) {
  */
 Reporter.prototype.logSystem = function(system, skipped) {
     var skipMsg = (skipped) ? ' (skipped)' : '';
-    console.log('System: ' + system.name + ':' + system.type + ':' + system.path + skipMsg);
+    console.log(system.type + ':' + system.name + ':' + system.filename + skipMsg);
 };
 
 /**
@@ -56,11 +57,22 @@ Reporter.prototype.logSystem = function(system, skipped) {
  */
 Reporter.prototype.logFactory = function(factory, skipped) {
     var skipMsg = (skipped) ? ' (skipped)' : '';
-    console.log('Factory: ' + factory.path + skipMsg);
-    for (var i = 0, len = factory.functions.length; i < len; i++) {
-        var generator = factory.functions[i];
-        console.log('\t' + generator.entityType + ':' + generator.functionName);
+    console.log('Factory:factory.js' + skipMsg);
+    if (!skipped) {
+        for (var i = 0, len = factory.functions.length; i < len; i++) {
+            var generator = factory.functions[i];
+            console.log('\t' + generator.entityType + ':' + generator.functionName);
+        }
     }
+};
+
+/**
+ * Logs out a syntax error during the parsing phase
+ * @param {SyntaxError} err
+ */
+Reporter.prototype.logSyntaxError = function(err) {
+    console.log('Line ' + err.line + ', Column ' + err.column + ': ' + err.message);
+    process.exit(1);
 };
 
 /**
@@ -73,42 +85,54 @@ Reporter.prototype.complete = function(projectName) {
 
 /**
  * Represents a single Component
- * @param {string} name - Name of the Component
- * @param {string} path - File path
+ * @param {string} name     - Name of the Component
+ * @param {string} filename - Name of the file
+ * @param {string} code     - Code generated for the Component
  * @constructor
  */
-var ComponentMessage = function(name, path) {
+var ComponentMessage = function(name, filename, code) {
     this.name = name;
-    this.path = path;
+    this.filename = filename;
+    this.code = code;
 };
 
 /**
  * Represents a single System
- * @param {string} name - Name of the System
- * @param {string} type - System, RenderSystem, or BehaviorSystem
- * @param {string} path - File path
+ * @param {string} name     - Name of the System
+ * @param {string} type     - System, RenderSystem, or BehaviorSystem
+ * @param {string} filename - File path
+ * @param {string} code     - Code generated for the System
  * @constructor
  */
-var SystemMessage = function(name, type, path) {
+var SystemMessage = function(name, type, filename, code) {
     this.name = name;
     this.type = type;
-    this.path = path;
+    this.filename = filename;
+    this.code = code;
 };
 
 /**
  * Represents the Factory
- * @param {string}             path       - File path
- * @param {GeneratorMessage[]} functions  - Names of the functions generated
+ * @param {GeneratorMessage[]} functions  - Functions being generated for the Factory
+ * @param {string}             code       - Code generated for the Factory
  * @constructor
  */
-var FactoryMessage = function(path, functions) {
-    this.path = path;
+var FactoryMessage = function(functions, code) {
     this.functions = functions;
+    this.code = code;
 };
 
-var GeneratorMessage = function(entityType, functionName) {
+/**
+ * Represents a single generator function
+ * @param {string} entityType   - Type of Entity to produce
+ * @param {string} functionName - Name of the function
+ * @param {string} code         - Code generated for the function
+ * @constructor
+ */
+var GeneratorMessage = function(entityType, functionName, code) {
     this.entityType = entityType;
     this.functionName = functionName;
+    this.code = code;
 };
 
 module.exports = {
