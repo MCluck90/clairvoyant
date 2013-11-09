@@ -141,6 +141,18 @@ Compiler.prototype.compileSystems = function(systems) {
             ]));
             inheritanceCode.push(util.generateInheritanceCode(system.name, 'System'));
 
+            onTickCode = [
+                '/**',
+                ' * TODO: Write documentation',
+                ' * @param {number} delta - Time since last update',
+                ' */',
+                system.name + '.prototype.update = function(delta) {',
+                    '\tfor (var i = 0, len = this.actionOrder.length; i < len; i++) {',
+                        '\t\tvar entity = this.actionOrder[i];',
+                    '\t}',
+                '};\n'
+            ];
+
             // We don't bother with inheritance in Psykick3D, son
             if (system.parent !== null) {
                 this.reporter.warning('Ignoring system inheritance on \'' + system.name + '\'');
