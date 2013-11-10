@@ -2,7 +2,7 @@
   "name": "clairvoyant",
   "preferGlobal": true,
   "author": "Mike Cluck <mcluck90@gmail.com>",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Build Psykick game skeletons using a custom language",
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
       "email": "mcluck90@gmail.com"
     }
   ],
+  "main": "./src/main.js",
   "bin": {
     "cvt": "./bin/clairvoyant"
   },
