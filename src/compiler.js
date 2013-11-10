@@ -204,57 +204,57 @@ Compiler.prototype.compileSystems = function(systems) {
                 throw new SyntaxError('Expected \'RenderSystem\' or \'BehaviorSystem\' but got \'' +
                     system.parent + '\'');
             }
+        }
 
-            // Only adds on \n when we join it all at the end
-            requiredModuleCode.push('');
-            inheritanceCode.push('');
+        // Only adds on \n when we join it all at the end
+        requiredModuleCode.push('');
+        inheritanceCode.push('');
 
-            // If the system was defined by it's Components, use those
-            if (system.properties.type === 'ComponentList') {
-                requiredComponents = system.properties.components;
-            } else {
-                // Otherwise, extract them from the templates
-                var templates = system.properties.entities;
-                for (var j = 0, numOfTmpls = templates.length; j < numOfTmpls; j++) {
-                    var templateName = templates[j];
-                    for (var componentName in templatesByName[templateName]) {
-                        if (requiredComponents.indexOf(componentName) === -1) {
-                            requiredComponents.push(componentName);
-                        }
+        // If the system was defined by it's Components, use those
+        if (system.properties.type === 'ComponentList') {
+            requiredComponents = system.properties.components;
+        } else {
+            // Otherwise, extract them from the templates
+            var templates = system.properties.entities;
+            for (var j = 0, numOfTmpls = templates.length; j < numOfTmpls; j++) {
+                var templateName = templates[j];
+                for (var componentName in templatesByName[templateName]) {
+                    if (requiredComponents.indexOf(componentName) === -1) {
+                        requiredComponents.push(componentName);
                     }
                 }
             }
-
-            // Every System must define which Components it needs
-            if (requiredComponents.length === 0) {
-                this.reporter.error(
-                    new SyntaxError('System \'' + system.name +'\' does not have required components or entities')
-                );
-                continue;
-            }
-
-            // Prepare the list of required components
-            systemCode.push('\tthis.requiredComponents = [');
-            for (var j = 0, numOfComponents = requiredComponents.length; j < numOfComponents; j++) {
-                var separator = (j < numOfComponents - 1) ? '\',' : '\'';
-                systemCode.push('\t\t\'' + requiredComponents[j] + separator);
-            }
-            systemCode.push('\t];');
-            systemCode.push('};\n');
-
-            var exportCode = [util.generateExportsCode(system.name)];
-
-            systemMessages.push(new SystemMessage(
-                system.name,
-                system.parent,
-                generateFileName(system.name),
-                requiredModuleCode.concat(systemCode)
-                    .concat(inheritanceCode)
-                    .concat(onTickCode)
-                    .concat(exportCode)
-                    .join('\n')
-            ));
         }
+
+        // Every System must define which Components it needs
+        if (requiredComponents.length === 0) {
+            this.reporter.error(
+                new SyntaxError('System \'' + system.name +'\' does not have required components or entities')
+            );
+            continue;
+        }
+
+        // Prepare the list of required components
+        systemCode.push('\tthis.requiredComponents = [');
+        for (var j = 0, numOfComponents = requiredComponents.length; j < numOfComponents; j++) {
+            var separator = (j < numOfComponents - 1) ? '\',' : '\'';
+            systemCode.push('\t\t\'' + requiredComponents[j] + separator);
+        }
+        systemCode.push('\t];');
+        systemCode.push('};\n');
+
+        var exportCode = [util.generateExportsCode(system.name)];
+
+        systemMessages.push(new SystemMessage(
+            system.name,
+            system.parent,
+            generateFileName(system.name),
+            requiredModuleCode.concat(systemCode)
+                .concat(inheritanceCode)
+                .concat(onTickCode)
+                .concat(exportCode)
+                .join('\n')
+        ));
     }
 
     return systemMessages;
