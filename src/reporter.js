@@ -16,7 +16,7 @@ var Reporter = function(failOnWarning) {
  */
 Reporter.prototype.warning = function(warning) {
     console.log(warning);
-    if (!this.failOnWarning) {
+    if (this.failOnWarning) {
         process.exit(1);
     }
 };
