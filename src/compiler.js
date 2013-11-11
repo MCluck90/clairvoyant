@@ -338,10 +338,10 @@ Compiler.prototype.compileFactory = function(templates) {
     }
 
     factoryCode = util.generateRequireStatements(requiredModules) +
-                  'var Factory = {\n' +
+                  '\n\nvar Factory = {\n' +
                   factoryCode.join('\n') +
                   '};\n\n' +
-                  'module.exports = Factory';
+                  'module.exports = Factory;';
 
     return new FactoryMessage(generatorMessages, factoryCode);
 };
