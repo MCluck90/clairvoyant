@@ -161,7 +161,7 @@ Templates {
 Systems are things which act upon groups on Entities, usually on each tick. Systems differ slightly between Psykick3D and Psykick2D.
 
 * In Psykick2D, Systems are divided into RenderSystems and BehaviorSystems. RenderSystems are used in the draw phase to, well, render stuff. BehaviorSystems are used during the update phase to change the state of the World.
-* Psykick3D Systems are all essentially BehaviorSystems because the rendering is handled by THREE.js. Systems
+* Psykick3D Systems are all essentially BehaviorSystems because the rendering is handled by THREE.js.
 
 Say we wanted a System which rendered our Boxes up there:
 
@@ -225,7 +225,7 @@ Systems {
 ```
 
 ## Modules
-No one wants to keep all of their code in one file. That's why you use `include` files just like you would in a C/++ style language:
+No one wants to keep all of their code in one file. That's why you can `include` files just like you would in a C/++ style language:
 
 ```
 ProjectName {
